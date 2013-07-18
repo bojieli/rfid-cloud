@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS card (
     register_time DATETIME,
     isactive BOOL DEFAULT TRUE,
     PRIMARY KEY (id),
-    FOREIGN KEY (student) REFERENCES student (id),
+    FOREIGN KEY (student) REFERENCES student (id)
 ) DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS gate_log (
