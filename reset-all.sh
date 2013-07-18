@@ -5,9 +5,11 @@ echo -n "Press ENTER to continue or Ctrl+C to exit..."
 read
 
 # reset database
-mysql --user=ecard-www --password=0CIigA0nStYlEGMM -e "DROP DATABASE ecard;"
-mysql --user=ecard-www --password=0CIigA0nStYlEGMM < install.sql
+mysql -u root -p -e "DROP DATABASE ecard;"
+mysql -u root -p < install.sql
 
 # restart server
 pkill ecard
-node ecard.js
+command -v node >/dev/null 2>&1 && node ecard.js && exit 0
+command -v nodejs >/dev/null 2>&1 && nodejs ecard.js && exit 0
+echo "nodejs is required!" && exit 1
