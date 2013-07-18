@@ -108,7 +108,7 @@ handle.notify = function(schoolID, schoolName, data, response) {
         getInfoFromCardID(schoolID, cardID, function(student) {
             if (typeof student !== "object" || typeof student.report_mobile === "undefined") {
                 log_error(schoolID, "student does not exist: " + cardID + " from " + schoolName);
-                continue;
+                return;
             }
             if (typeof student.report_mobile !== "object")
                 student.report_mobile = [student.report_mobile];
