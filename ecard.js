@@ -122,32 +122,32 @@ handle.notify = function(schoolID, schoolName, data, response) {
 var dead_schools = {};
 var heartbeats = {};
 function check_heartbeat() {
-    var now = Date().getTime();
+    var now = Math.round(+new Date()/1000);
     for (id in heartbeats) {
         if (typeof dead_schools[id] === "undefined"
-            && now - heartbeats[id] > config.heartbeat_timeout * 1000) {
+            && now - heartbeats[id] > config.heartbeat_timeout) {
             dead_schools[id] = true;
             db.find("SELECT name FROM school WHERE id=" + db.escape(id),
                 function(result) {
                     if (typeof result.name === "undefined")
                         return;
                     handle.reportitnow(id, result.name,
-                        "考勤机有 " + parseInt((now - heartbeats[id])/1000) + " 秒没发心跳包了，请检查");
+                        "考勤机有 " + (now - heartbeats[id]) + " 秒没发心跳包了，请检查");
             });
         }
     }
 }
 function init_watchdog() {
-    setInterval(check_heartbeat, config.heartbeat_timeout * 1000);
+    setInterval(check_heartbeat, config.heartbeat_timeout);
 }
 
 handle.heartbeat = function(schoolID, schoolName, data, response) {
-    var now = Date().getTime();
+    var now = Math.round(+new Date()/1000);
     if (typeof heartbeats[id] === "undefined")
         heartbeats[id] = now;
-    else if (now - heartbeats[id] > config.heartbeat_timeout * 1000) {
+    else if (now - heartbeats[id] > config.heartbeat_timeout) {
         handle.reportitnow(schoolID, schoolName,
-            "考勤机已恢复，曾经 " + parseInt((now - heartbeats[id])/1000) + " 秒未发心跳包");
+            "考勤机已恢复，曾经 " + (now - heartbeats[id]) + " 秒未发心跳包");
         heartbeats[id] = now;
     }
     dead_schools[id] = undefined;
