@@ -30,23 +30,30 @@
 1. ```mysql -u root -p ecard``` 输入密码，进入 MySQL 命令行
 2. ```INSERT INTO push_api (host, port, path) VALUES ('example.com', 80, '/notify/path')```
 
-POST 数据是 JSON 格式。下面的竖线“|”表示“或”的关系。
+POST 数据是 JSON 格式。下面的竖线“|”表示“或”的关系，%varname% 表示这是一个变量。
 
 ### 学生出入校门事件
 
-```
+```js
 {
     type: notify,
     card: 0101xxxxxxxxxxxxxx,
     action: 0|1, // 分别表示进或出校门
-    school: {id: schoolID, name: schoolName},
-    student: {id: studentID, report_mobile: mobileNumber, name: studentName},
+    school: {
+        id: %schoolID%, 
+        name: %schoolName%
+    },
+    student: {
+        id: %studentID%,
+        report_mobile: %mobileNumbers%, // 如果有多个，用半角逗号隔开
+        name: %studentName%
+    },
 }
 ```
 
 ### 服务器报警事件
 
-```
+```js
 {
     type: alert,
     action: lost_heartbeat      // 服务器收不到 master 的心跳
@@ -54,14 +61,19 @@ POST 数据是 JSON 格式。下面的竖线“|”表示“或”的关系。
           | alloc_fail          // 内存分配失败
           | connected           // master|slave receiver 连接到 merger 上
           | disconnected,       // master|slave receiver 从 merger 断开
-    school: {id: schoolID, name:schoolName},
+    school: {
+        id: %schoolID%,
+        name: %schoolName%
+    },
     source: cloud|master|slave, // 报警消息来源
+
     // 以下两项仅对 lost|resume heartbeat 有效
-    curr_time: currentUnixTimestamp,
-    last_time: lastTimestampReceivedHeartbeat,
-    // 以下两项都可能是 undefined
-    daemon: merger|receiver|undefined, // 是哪个应用出了问题
-    msg: originalMsg|undefined, // 如果此事件是考勤机汇报来的，则附上原始消息
+    curr_time: %currentUnixTimestamp%,
+    last_time: %lastTimestampReceivedHeartbeat%,
+
+    // 以下两项都可能不存在（即 undefined）
+    daemon: merger|receiver, // 是哪个应用出了问题
+    msg: %originalMsg%, // 如果此事件是考勤机汇报来的，则附上原始消息
 }
 ```
 
