@@ -1,6 +1,7 @@
 var url = require('url');
 var sys = require('util');
 var http = require('http');
+var querystring = require('querystring');
 var mysql = require('./db.js');
 var config = require('./config.js');
 var smsapi = require('./sms.js');
@@ -186,9 +187,11 @@ try {
     pathname = pathname.replace('/', '');
     if (typeof handle[pathname] == "function") {
         var POST = querystring.parse(data);
-        if (POST.access_token.length == 0)
-            throw "station-id or station-token not given";
-        db.find("SELECT id, name FROM school WHERE access_token=" + db.escape(token),
+        if (typeof POST.data !== "string")
+            throw "This request contains no data, ignoring";
+        if (typeof POST.token !== "string" || POST.token.length == 0)
+            throw "School access token not given";
+        db.find("SELECT id, name FROM school WHERE access_token=" + db.escape(POST.token),
             function(result) {
             try {
                 if (typeof result == "undefined")
