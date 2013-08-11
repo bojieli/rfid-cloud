@@ -280,6 +280,7 @@ mysql.pool.getConnection(function(err, conn) {
     handle_disconnect(conn);
     try {
         http.createServer(http_server).listen(config.listen_port, config.listen_host);
+        console.log("Listening on " + config.listen_host + ":" + config.listen_port);
         init_watchdog();
     } catch(e) {
         console.log("Failed to create HTTP server on port " + config.listen_port);
