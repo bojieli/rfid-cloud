@@ -149,9 +149,9 @@ handle.heartbeat = function(schoolID, schoolName, data, response) {
     else if (now - heartbeats[schoolID] > config.heartbeat_timeout) {
         handle.reportitnow(schoolID, schoolName,
             "考勤机已恢复，曾经 " + (now - heartbeats[schoolID]) + " 秒未发心跳包");
-        heartbeats[schoolID] = now;
     }
     dead_schools[schoolID] = undefined;
+    heartbeats[schoolID] = now;
     response.returnOK();
 }
 
