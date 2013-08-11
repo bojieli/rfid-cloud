@@ -170,11 +170,17 @@ handle.reportitnow = function(schoolID, schoolName, data, response) {
                 else
                     response.returnOK();
             }
-            db.query("SELECT COUNT(*) as cnt FROM error_log WHERE school=? AND time > DATESUB(NOW(), INTERAL 1 DAY)",
+            db.query("SELECT COUNT(*) as cnt FROM error_log WHERE school=? AND time > DATE_SUB(NOW(), INTERVAL 1 DAY)",
                 [schoolID],
                 function(err, result) {
+                try {
+                    if (err)
+                        throw err;
                     if (typeof result[0].cnt !== "undefined" && result[0].cnt <= config.max_reports_per_day)
                         send_admin_mobile("[" + schoolName + "]报告: " + data);
+                } catch (e) {
+                    console.log(e);
+                }
             });
         } catch(e) {
             console.log(e);
