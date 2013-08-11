@@ -58,3 +58,9 @@ CREATE TABLE IF NOT EXISTS sms_log (
     KEY key_time (time),
     KEY key_mobile (mobile)
 ) DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS push_api (
+    host VARCHAR(200) NOT NULL,
+    port INT(5) NOT NULL DEFAULT 80,
+    path VARCHAR(200) NOT NULL,
+) DEFAULT CHARSET=utf8;

@@ -116,6 +116,13 @@ handle.notify = function(schoolID, schoolName, data, response) {
             db.query("INSERT INTO gate_log (card,student,time,school,action) VALUES (?,?,NOW(),?,?)",
                 [cardID, student.id, schoolID, action]);
             send_mobile(student.report_mobile, "您的孩子" + student.name + "已" + (action == '1' ? '走出' : '进入') + schoolName + "校门");
+            push_api({
+                type: "notify",
+                card: cardID,
+                action: action,
+                school: {id: schoolID, name: schoolName},
+                student: student,
+            });
         });
     }
 }
@@ -133,7 +140,15 @@ function check_heartbeat() {
                     if (typeof result.name === "undefined")
                         return;
                     handle.reportitnow(id, result.name,
-                        "考勤机有 " + (now - heartbeats[id]) + " 秒没发心跳包了，请检查");
+                        "考勤机有 " + (now - heartbeats[id]) + " 秒没发心跳包了，请检查",
+                        true);
+                push_api({
+                    type: "alert",
+                    action: "lost_heartbeat",
+                    school: {id: id, name: result.name},
+                    curr_time: now,
+                    last_time: heartbeats[id],
+                });
             });
         }
     }
@@ -148,7 +163,15 @@ handle.heartbeat = function(schoolID, schoolName, data, response) {
         heartbeats[schoolID] = now;
     else if (now - heartbeats[schoolID] > config.heartbeat_timeout) {
         handle.reportitnow(schoolID, schoolName,
-            "考勤机已恢复，曾经 " + (now - heartbeats[schoolID]) + " 秒未发心跳包");
+            "考勤机已恢复，曾经 " + (now - heartbeats[schoolID]) + " 秒未发心跳包",
+            true);
+        push_api({
+            type: "alert",
+            action: "resume_heartbeat",
+            school: {id: schoolID, name: schoolName},
+            curr_time: now,
+            last_time: heartbeats[schoolID],
+        });
     }
     dead_schools[schoolID] = undefined;
     heartbeats[schoolID] = now;
@@ -160,7 +183,66 @@ function log_error(school, msg, cont) {
         [school, msg], cont);
 }
 
-handle.reportitnow = function(schoolID, schoolName, data, response) {
+// This function is async and does not guarantee delivery
+function http_post(options, content) {
+    options.method = 'POST';
+    options.headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': content.length,
+    };
+    var post_req = http.request(options);
+    post_req.write(content);
+    post_req.end();
+}
+
+// HTTP POST to all URLs registered for push API
+function push_api(obj) {
+    db.query("SELECT host, port, path FROM push_api", function(err, result) {
+    try {
+        if (err)
+            throw err;
+        for (i in result)
+            http_post(result[i], querystring.stringify(obj));
+    } catch(e) {
+        console.log(e);
+    }
+    });
+}
+
+handle.reportitnow = function(schoolID, schoolName, data, response, isInternal) {
+try {
+    // if it is text message merger, parse the message.
+    if (!isInternal) {
+        var obj = {
+            type: "alert",
+            action: "report",
+            school: {id: schoolID, name: schoolName},
+            msg: data,
+        };
+        if (data.indexOf("allocate") >= 0) {
+            obj.daemon = "merger";
+            obj.source = "master";
+            obj.action = "alloc_fail";
+        } else if (data.indexOf("connected") >= 0
+            || data.indexOf("exit") >= 0
+            || data.indexOf("watchdog") >= 0 && data.indexOf("dead") >= 0)
+        {
+            obj.daemon = "receiver";
+            if (data.indexOf("master") >= 0)
+                obj.source = "master";
+            else if (data.indexOf("slave") >= 0)
+                obj.source = "slave";
+            if (data.indexOf("connected") >= 0)
+                obj.action = "connected";
+            else if (data.indexOf("slave") >= 0)
+                obj.action = "exit";
+        } else if (data.indexOf("watchdog") >= 0) {
+            obj.daemon = "watchdog";
+        }
+
+        push_api(obj);
+    }
+
     log_error(schoolID, data,
         function(err) {
         try {
@@ -186,6 +268,9 @@ handle.reportitnow = function(schoolID, schoolName, data, response) {
             console.log(e);
         }
     });
+} catch(e) {
+    console.log(e);
+}
 }
 
 function route(pathname, headers, data, response) {
