@@ -1,5 +1,67 @@
-# RFID e-card server
+# RFID 服务器端
 
-Required packages:
-- node.js
-- MySQL
+## 服务器部署
+
+依赖的软件：
+
+* node.js
+* MySQL
+
+初始化数据库：
+
+1. ```mysql -u root -p``` 输入密码，进入 MySQL 命令行
+2. ```source /path/to/install.sql``` 初始化 ecard 数据库结构
+3. 在另一个终端里，```openssl rand -base64 15``` 生成一个随机密码
+4. 在 MySQL 命令行里，```GRANT ALL ON ecard.* TO 'ecard-www'@'localhost' IDENTIFIED BY 'the-generated-password';```
+5. 修改 db.js，把其中的 password 修改成刚才生成的密码
+
+运行服务器：
+
+* Debug: ```node ecard.js```
+* Production: ```nohup node monitor.js >/dev/null 2>&1 &```
+
+
+## Push API
+
+将学生出入校门、考勤机故障等事件以 HTTP POST 的形式通知给第三方 API。
+
+新加 API：
+
+1. ```mysql -u root -p ecard``` 输入密码，进入 MySQL 命令行
+2. ```INSERT INTO push_api (host, port, path) VALUES ('example.com', 80, '/notify/path')```
+
+POST 数据是 JSON 格式。下面的竖线“|”表示“或”的关系。
+
+### 学生出入校门事件
+
+```
+{
+    type: notify,
+    card: 0101xxxxxxxxxxxxxx,
+    action: 0|1, // 分别表示进或出校门
+    school: {id: schoolID, name: schoolName},
+    student: {id: studentID, report_mobile: mobileNumber, name: studentName},
+}
+```
+
+### 服务器报警事件
+
+```
+{
+    type: alert,
+    action: lost_heartbeat      // 服务器收不到 master 的心跳
+          | resume_heartbeat    // 服务器重新收到 master 的心跳
+          | alloc_fail          // 内存分配失败
+          | connected           // master|slave receiver 连接到 merger 上
+          | disconnected,       // master|slave receiver 从 merger 断开
+    school: {id: schoolID, name:schoolName},
+    source: cloud|master|slave, // 报警消息来源
+    // 以下两项仅对 lost|resume heartbeat 有效
+    curr_time: currentUnixTimestamp,
+    last_time: lastTimestampReceivedHeartbeat,
+    // 以下两项都可能是 undefined
+    daemon: merger|receiver|undefined, // 是哪个应用出了问题
+    msg: originalMsg|undefined, // 如果此事件是考勤机汇报来的，则附上原始消息
+}
+```
+
