@@ -144,14 +144,14 @@ function init_watchdog() {
 
 handle.heartbeat = function(schoolID, schoolName, data, response) {
     var now = Math.round(+new Date()/1000);
-    if (typeof heartbeats[id] === "undefined")
-        heartbeats[id] = now;
-    else if (now - heartbeats[id] > config.heartbeat_timeout) {
+    if (typeof heartbeats[schoolID] === "undefined")
+        heartbeats[schoolID] = now;
+    else if (now - heartbeats[schoolID] > config.heartbeat_timeout) {
         handle.reportitnow(schoolID, schoolName,
-            "考勤机已恢复，曾经 " + (now - heartbeats[id]) + " 秒未发心跳包");
-        heartbeats[id] = now;
+            "考勤机已恢复，曾经 " + (now - heartbeats[schoolID]) + " 秒未发心跳包");
+        heartbeats[schoolID] = now;
     }
-    dead_schools[id] = undefined;
+    dead_schools[schoolID] = undefined;
     response.returnOK();
 }
 
@@ -171,7 +171,7 @@ handle.reportitnow = function(schoolID, schoolName, data, response) {
                     response.returnOK();
             }
             db.query("SELECT COUNT(*) as cnt FROM error_log WHERE school=? AND time > DATESUB(NOW(), INTERAL 1 DAY)",
-                [school],
+                [schoolID],
                 function(err, result) {
                     if (typeof result[0].cnt !== "undefined" && result[0].cnt <= config.max_reports_per_day)
                         send_admin_mobile("[" + schoolName + "]报告: " + data);
