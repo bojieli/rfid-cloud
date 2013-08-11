@@ -9,6 +9,9 @@ var post_options = {
     }
 };
 
+var querystring = require('querystring');
+var http = require('http');
+
 exports.send = function(mobiles, msg) {
     var post_data = querystring.stringify({
         mobile: mobiles.join(','),

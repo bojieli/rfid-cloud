@@ -77,7 +77,7 @@ function toArray(obj) {
 function send_mobile(mobiles, msg) {
     db.query("INSERT INTO sms_log (time,mobile,msg) VALUES (NOW(),?,?)",
             [mobiles.join(','), msg]);
-    smsapi.send(mobiles, msg);
+    smsapi.send(mobiles, msg + config.sms_suffix);
 }
 function send_admin_mobile(msg) {
     send_mobile(config.admin_mobiles, msg);
@@ -103,7 +103,7 @@ handle.notify = function(schoolID, schoolName, data, response) {
         var cardID = transactions[i].substr(0, config.card_id_size);
         var action = transactions[i].substr(config.card_id_size, 1);
         if (action != '0' && action != '1') {
-            invalid_msg(trainsactions[i]);
+            invalid_msg(transactions[i]);
             continue;
         }
         getInfoFromCardID(schoolID, cardID, function(student) {
@@ -115,7 +115,7 @@ handle.notify = function(schoolID, schoolName, data, response) {
                 student.report_mobile = [student.report_mobile];
             db.query("INSERT INTO gate_log (card,student,time,school,action) VALUES (?,?,NOW(),?,?)",
                 [cardID, student.id, schoolID, action]);
-            send_mobile(student.report_mobile, "您的孩子" + student.name + "已" + (action == '1' ? '走出' : '进入') + schoolName + "校门" + config.message_affix);
+            send_mobile(student.report_mobile, "您的孩子" + student.name + "已" + (action == '1' ? '走出' : '进入') + schoolName + "校门");
         });
     }
 }
