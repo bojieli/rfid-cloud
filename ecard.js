@@ -146,6 +146,7 @@ function check_heartbeat() {
                     type: "alert",
                     action: "lost_heartbeat",
                     school: {id: id, name: result.name},
+                    source: "cloud",
                     curr_time: now,
                     last_time: heartbeats[id],
                 });
@@ -169,6 +170,7 @@ handle.heartbeat = function(schoolID, schoolName, data, response) {
             type: "alert",
             action: "resume_heartbeat",
             school: {id: schoolID, name: schoolName},
+            source: "cloud",
             curr_time: now,
             last_time: heartbeats[schoolID],
         });
@@ -234,10 +236,13 @@ try {
                 obj.source = "slave";
             if (data.indexOf("connected") >= 0)
                 obj.action = "connected";
-            else if (data.indexOf("slave") >= 0)
-                obj.action = "exit";
+            else if (data.indexOf("exit") >= 0)
+                obj.action = "disconnected";
         } else if (data.indexOf("watchdog") >= 0) {
-            obj.daemon = "watchdog";
+            obj.daemon = "merger";
+            obj.source = "master";
+        } else {
+            obj.source = "unknown";
         }
 
         push_api(obj);
