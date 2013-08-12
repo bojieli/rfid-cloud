@@ -96,12 +96,14 @@ handle.notify = function(schoolID, schoolName, data, response) {
     }
     var transactions = data.split('.');
     for (i in transactions) {
-        if (transactions[i].length != config.card_id_size + 1) {
+        if (transactions[i].length == 0)
+            continue;
+        if (transactions[i].length != config.card_id_size * 2 + 1) {
             invalid_msg(transactions[i]);
             continue;
         }
-        var cardID = transactions[i].substr(0, config.card_id_size);
-        var action = transactions[i].substr(config.card_id_size, 1);
+        var cardID = transactions[i].substr(0, config.card_id_size * 2);
+        var action = transactions[i].substr(config.card_id_size * 2, 1);
         if (action != '0' && action != '1') {
             invalid_msg(transactions[i]);
             continue;
