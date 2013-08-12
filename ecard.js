@@ -9,7 +9,7 @@ var db = {};
 
 var dbproto = {};
 dbproto.myquery = function(query, values, callback) {
-    if (typeof values == "function") {
+    if (typeof values === "function") {
         callback = values;
         values = [];
     }
@@ -19,23 +19,42 @@ dbproto.myquery = function(query, values, callback) {
         callback(err, data);
     });
 }
-dbproto.find = function(query, cont, err_handler) {
+dbproto.find = function(query, values, cont, err_handler) {
 try {
-    db.myquery(query, function(err, results) {
-        if (err)
-            err_handler(err);
+    if (typeof values === "function") {
+        err_handler = cont;
+        cont = values;
+        values = [];
+    }
+    db.myquery(query, values, function(err, results) {
+    try {
+        if (err) {
+            if (typeof err_handler === "function")
+                err_handler(err);
+            else
+                throw err;
+            return;
+        }
         if (results.length > 0)
             cont(results[0]);
         else
             cont();
+    } catch(e) {
+        console.log(e);
+    }
     });
 } catch(e) {
     console.log(e);
 }
 }
-dbproto.result = function(query, cont, err_handler) {
+dbproto.result = function(query, values, cont, err_handler) {
 try {
-    db.find(query, function(result) {
+    if (typeof values === "function") {
+        err_handler = cont;
+        cont = values;
+        values = [];
+    }
+    db.find(query, values, function(result) {
         for (col in result) {
             cont(result[col]);
             return; // only the first column
@@ -91,9 +110,36 @@ function getInfoFromCardID(schoolID, cardID, cont) {
 
 var handle = {};
 handle.notify = function(schoolID, schoolName, data, response) {
+try {
     function invalid_msg(msg) {
         console.log('Received invalid message from [' + schoolName + ']: ' + msg);
     }
+    function notify_student(cardID, schoolID, schoolName, student) {
+    try {
+        if (typeof student !== "object" || typeof student.report_mobile === "undefined") {
+            log_error(schoolID, "student does not exist: " + cardID + " from " + schoolName);
+            return true;
+        }
+        if (typeof student.report_mobile !== "object")
+            student.report_mobile = [student.report_mobile];
+        db.query("INSERT INTO gate_log (card,student,time,school,action) VALUES (?,?,NOW(),?,?)",
+            [cardID, student.id, schoolID, action]);
+        send_mobile(student.report_mobile, "您的孩子" + student.name + "已" + (action == '1' ? '走出' : '进入') + schoolName + "校门");
+        push_api({
+            type: "notify",
+            card: cardID,
+            action: action,
+            school: {id: schoolID, name: schoolName},
+            student: student,
+        });
+        return true;
+    } catch(e) {
+        console.log(e);
+        return false;
+    }
+    }
+    var pending_callbacks = 0;
+    response.returned = false;
     var transactions = data.split('.');
     for (i in transactions) {
         if (transactions[i].length == 0)
@@ -108,25 +154,28 @@ handle.notify = function(schoolID, schoolName, data, response) {
             invalid_msg(transactions[i]);
             continue;
         }
+
+        ++pending_callbacks;
         getInfoFromCardID(schoolID, cardID, function(student) {
-            if (typeof student !== "object" || typeof student.report_mobile === "undefined") {
-                log_error(schoolID, "student does not exist: " + cardID + " from " + schoolName);
-                return;
+        try {
+            if (!notify_student(cardID, schoolID, schoolName, student)) {
+                response.returnCode(500);
+                response.returned = true;
             }
-            if (typeof student.report_mobile !== "object")
-                student.report_mobile = [student.report_mobile];
-            db.query("INSERT INTO gate_log (card,student,time,school,action) VALUES (?,?,NOW(),?,?)",
-                [cardID, student.id, schoolID, action]);
-            send_mobile(student.report_mobile, "您的孩子" + student.name + "已" + (action == '1' ? '走出' : '进入') + schoolName + "校门");
-            push_api({
-                type: "notify",
-                card: cardID,
-                action: action,
-                school: {id: schoolID, name: schoolName},
-                student: student,
-            });
+
+            --pending_callbacks;
+            if (pending_callbacks == 0 && !response.returned)
+                response.returnOK();
+            else if (pending_callbacks < 0)
+                throw "Pending callback count less than zero: " + pending_callbacks;
+        } catch(e) {
+            console.log(e);
+        }
         });
     }
+} catch(e) {
+    console.log(e);
+}
 }
 
 var dead_schools = {};
@@ -322,15 +371,22 @@ function http_server(request, response) {
         this.end();
     }
     response.returnOK = function() {
-        console.log("200 OK");
+        console.log("HTTP 200 OK");
         this.writeHeader(200);
         this.write("OK");
         this.end();
     }
     response.return200 = function(str) {
-        console.log("200 (length " + str.length + ")");
+        console.log("HTTP 200 (length " + str.length + ")");
         this.writeHeader(200);
         this.write(str);
+        this.end();
+    }
+    response.returnCode = function(code, msg) {
+        console.log("HTTP " + code);
+        this.writeHeader(code);
+        if (msg)
+            this.write(msg);
         this.end();
     }
     try {
