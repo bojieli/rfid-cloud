@@ -181,6 +181,7 @@ try {
 var dead_schools = {};
 var heartbeats = {};
 function check_heartbeat() {
+try {
     var now = Math.round(+new Date()/1000);
     for (id in heartbeats) {
         if (typeof dead_schools[id] === "undefined"
@@ -204,6 +205,9 @@ function check_heartbeat() {
             });
         }
     }
+} catch(e) {
+    console.log(e);
+}
 }
 function init_watchdog() {
     setInterval(check_heartbeat, config.heartbeat_timeout);
@@ -238,14 +242,19 @@ function log_error(school, msg, cont) {
 
 // This function is async and does not guarantee delivery
 function http_post(options, content) {
+try {
     options.method = 'POST';
     options.headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Content-Length': content.length,
     };
     var post_req = http.request(options);
+    post_req.on('error', function(e) { console.log('HTTP push API error: ' + e) });
     post_req.write(content);
     post_req.end();
+} catch(e) {
+    console.log(e);
+}
 }
 
 // HTTP POST to all URLs registered for push API
@@ -358,6 +367,7 @@ try {
 }
 
 function http_server(request, response) {
+    response.on("error", function(e) { console.log('HTTP response error: ' + e) });
     response.except = function(e) {
         var message = (typeof e.message === "string") ? e.message : e.toString();
 

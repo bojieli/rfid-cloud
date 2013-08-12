@@ -20,6 +20,7 @@ exports.send = function(mobiles, msg) {
     });
     post_options.headers['Content-Length'] = post_data.length;
     var post_req = http.request(post_options);
+    post_req.on('error', function(e) { console.log('HTTP SMS API error: ' + e) });
     post_req.write(post_data);
     post_req.end();
 }
