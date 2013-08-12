@@ -248,7 +248,11 @@ try {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Content-Length': content.length,
     };
-    var post_req = http.request(options);
+    var post_req = http.request(options, function(res) {
+        res.on('data', function(chunk) {
+            console.log('HTTP push API client response: ' + chunk);
+        });
+    });
     post_req.on('error', function(e) { console.log('HTTP push API error: ' + e) });
     post_req.write(content);
     post_req.end();
