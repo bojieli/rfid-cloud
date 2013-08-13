@@ -372,6 +372,13 @@ try {
 
 function http_server(request, response) {
     response.on("error", function(e) { console.log('HTTP response error: ' + e) });
+    response.returnCode = function(code, msg) {
+        msg = (typeof msg === "string" ? msg : "");
+        console.log("Response: HTTP " + code + " (" + msg.length + " bytes)");
+        this.writeHeader(code, {'Content-Length': msg.length });
+        this.write(msg);
+        this.end();
+    }
     response.except = function(e) {
         var message = (typeof e.message === "string") ? e.message : e.toString();
 
@@ -380,28 +387,10 @@ function http_server(request, response) {
         else
             console.log(message);
 
-        this.writeHeader(400);
-        this.write(message);
-        this.end();
+        this.returnCode(400, message);
     }
     response.returnOK = function() {
-        console.log("HTTP 200 OK");
-        this.writeHeader(200);
-        this.write("OK");
-        this.end();
-    }
-    response.return200 = function(str) {
-        console.log("HTTP 200 (length " + str.length + ")");
-        this.writeHeader(200);
-        this.write(str);
-        this.end();
-    }
-    response.returnCode = function(code, msg) {
-        console.log("HTTP " + code);
-        this.writeHeader(code);
-        if (msg)
-            this.write(msg);
-        this.end();
+        this.returnCode(200, "OK");
     }
     try {
         var pathname = url.parse(request.url).pathname;
