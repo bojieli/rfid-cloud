@@ -111,20 +111,35 @@ function getInfoFromCardID(schoolID, cardID, cont) {
 var handle = {};
 handle.notify = function(schoolID, schoolName, data, response) {
 try {
+    response.returned = false;
     function invalid_msg(msg) {
         console.log('Received invalid message from [' + schoolName + ']: ' + msg);
+        if (!response.returned) {
+            response.returnCode(400);
+            response.returned = true;
+        }
+        push_api({
+            type: "error",
+            error: "invalid_msg",
+            school: {id: schoolID, name: schoolName},
+            data: data,
+        });
     }
-    function notify_student(cardID, schoolID, schoolName, student) {
+    function notify_student(cardID, schoolID, schoolName, student, action) {
     try {
         if (typeof student !== "object" || typeof student.report_mobile === "undefined") {
-            log_error(schoolID, "student does not exist: " + cardID + " from " + schoolName);
+            log_error(schoolID, "CardID does not exist: " + cardID + " from " + schoolName);
+            push_api({
+                type: "error",
+                error: "card_not_exist",
+                school: {id: schoolID, name: schoolName},
+                card: cardID,
+                action: action,
+            });
             return true;
         }
-        if (typeof student.report_mobile !== "object")
-            student.report_mobile = [student.report_mobile];
         db.query("INSERT INTO gate_log (card,student,time,school,action) VALUES (?,?,NOW(),?,?)",
             [cardID, student.id, schoolID, action]);
-        send_mobile(student.report_mobile, "您的孩子" + student.name + "已" + (action == '1' ? '走出' : '进入') + schoolName + "校门");
         push_api({
             type: "notify",
             card: cardID,
@@ -132,6 +147,10 @@ try {
             school: {id: schoolID, name: schoolName},
             student: student,
         });
+        if (student.report_mobile.length == 0) // no mobile to be reported
+            return true;
+        student.report_mobile = student.report_mobile.split(",");
+        send_mobile(student.report_mobile, "您的孩子" + student.name + "已" + (action == '1' ? '走出' : '进入') + schoolName + "校门");
         return true;
     } catch(e) {
         console.log(e);
@@ -139,7 +158,6 @@ try {
     }
     }
     var pending_callbacks = 0;
-    response.returned = false;
     var transactions = data.split('.');
     for (i in transactions) {
         if (transactions[i].length == 0)
@@ -158,7 +176,7 @@ try {
         ++pending_callbacks;
         getInfoFromCardID(schoolID, cardID, function(student) {
         try {
-            if (!notify_student(cardID, schoolID, schoolName, student)) {
+            if (!notify_student(cardID, schoolID, schoolName, student, action)) {
                 response.returnCode(500);
                 response.returned = true;
             }

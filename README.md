@@ -78,3 +78,33 @@ POST 数据是 JSON 格式。下面的竖线“|”表示“或”的关系。
 }
 ```
 
+### 错误事件
+
+#### 收到的 ID 不属于此学校，或者 ID 不存在
+
+```js
+{
+    type: "error",
+    error: "card_not_exist",
+    school: {
+        id: schoolID,
+        name: schoolName
+    },
+    card: "0101xxxxxxxxxxxxxx",
+    action: "0"|"1", // 分别表示进或出校门
+}
+```
+
+#### 收到的消息格式错误
+
+```js
+{
+    type: "error",
+    error: "invalid_msg",
+    school: {
+        id: schoolID,
+        name: schoolName
+    },
+    data: data,
+}
+```
