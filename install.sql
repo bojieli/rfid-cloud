@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS student (
 ) DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS card (
-    id CHAR(16) NOT NULL,
+    id CHAR(18) NOT NULL,
     student INT(10) NOT NULL UNIQUE,
     register_time DATETIME,
     isactive BOOL DEFAULT TRUE,
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS card (
 ) DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS gate_log (
-    card CHAR(16) NOT NULL,
+    card CHAR(18) NOT NULL,
     student INT(10) NOT NULL,
     time DATETIME NOT NULL,
     school INT(10) NOT NULL,
