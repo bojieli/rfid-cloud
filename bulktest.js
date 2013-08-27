@@ -68,11 +68,13 @@ function check_timer(last_receive, action, flag) {
 
 function check_goin(flag) {
     check_timer(goin, "in", flag);
-    timer_goin = false;
+    if (!flag)
+        timer_goin = false;
 }
 function check_goout(flag) {
     check_timer(goout, "out", flag);
-    timer_goout = false;
+    if (!flag)
+        timer_goout = false;
 }
 
 function handle(obj) {
