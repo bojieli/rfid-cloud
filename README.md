@@ -60,7 +60,8 @@ POST 数据是 JSON 格式。下面的竖线“|”表示“或”的关系。
           | "resume_heartbeat"  // 服务器重新收到 master 的心跳
           | "alloc_fail"        // 内存分配失败
           | "connected"         // master|slave receiver 连接到 merger 上
-          | "disconnected"      // master|slave receiver 从 merger 断开
+          | "disconnected"      // master|slave receiver 从 merger 主动断开（如重启服务）
+          | "dead"              // merger 检测到 master|slave receiver 死掉了
           | "report",           // 其他考勤机汇报上来的消息
     school: {
         id: schoolID,
