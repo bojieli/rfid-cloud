@@ -147,7 +147,7 @@ try {
             school: {id: schoolID, name: schoolName},
             student: student,
         });
-        if (student.report_mobile.length == 0) // no mobile to be reported
+        if (typeof student.report_mobile !== "string" || student.report_mobile.length == 0) // no mobile to be reported
             return true;
         student.report_mobile = student.report_mobile.split(",");
         send_mobile(student.report_mobile, "您的孩子" + student.name + "已" + (action == '1' ? '走出' : '进入') + schoolName + "校门");
