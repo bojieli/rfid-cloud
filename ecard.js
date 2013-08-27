@@ -206,12 +206,14 @@ try {
             && now - heartbeats[id] > config.heartbeat_timeout) {
             dead_schools[id] = true;
             db.find("SELECT name FROM school WHERE id=" + db.escape(id),
-                function(result) {
-                    if (typeof result.name === "undefined")
-                        return;
-                    handle.reportitnow(id, result.name,
-                        "考勤机有 " + (now - heartbeats[id]) + " 秒没发心跳包了，请检查",
-                        true);
+            function(result) {
+                if (typeof result.name === "undefined")
+                    return;
+                handle.reportitnow(id, result.name,
+                    "考勤机有 " + (now - heartbeats[id]) + " 秒没发心跳包了，请检查",
+                    true);
+                db.query("UPDATE school SET merger_ok = 0 WHERE id=" + db.escape(id));
+
                 push_api({
                     type: "alert",
                     action: "lost_heartbeat",
@@ -239,6 +241,7 @@ handle.heartbeat = function(schoolID, schoolName, data, response) {
         handle.reportitnow(schoolID, schoolName,
             "考勤机已恢复，曾经 " + (now - heartbeats[schoolID]) + " 秒未发心跳包",
             true);
+        db.query("UPDATE school SET merger_ok = 1 WHERE id=" + db.escape(schoolID));
         push_api({
             type: "alert",
             action: "resume_heartbeat",
@@ -316,10 +319,21 @@ try {
                 obj.source = "master";
             else if (data.indexOf("slave") >= 0)
                 obj.source = "slave";
+            else
+                obj.source = "unknown";
+
             if (data.indexOf("connected") >= 0)
                 obj.action = "connected";
             else if (data.indexOf("exit") >= 0)
                 obj.action = "disconnected";
+            else if (data.indexOf("dead") >= 0)
+                obj.action = "dead";
+            else
+                obj.action = "unknown";
+
+            if (obj.source == "master" || obj.source == "slave")
+                db.query("UPDATE school SET " + obj.source + "_ok = " + (obj.action == "connected" ? 1 : 0)
+                    + " WHERE id=" + schoolID);
         } else if (data.indexOf("watchdog") >= 0) {
             obj.daemon = "merger";
             obj.source = "master";
@@ -330,6 +344,7 @@ try {
         push_api(obj);
     }
 
+    db.query("UPDATE school SET error_counter = error_counter+1 WHERE id=?", [schoolID]);
     log_error(schoolID, data,
         function(err) {
         try {

@@ -5,6 +5,10 @@ CREATE TABLE IF NOT EXISTS school (
     id INT(10) NOT NULL AUTO_INCREMENT,
     name VARCHAR(200) NOT NULL,
     access_token VARCHAR(200) NOT NULL,
+    merger_ok BOOL NOT NULL DEFAULT 0,
+    master_ok BOOL NOT NULL DEFAULT 0,
+    slave_ok BOOL NOT NULL DEFAULT 0,
+    error_counter INT(10) NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
     KEY key_token (access_token)
 ) DEFAULT CHARSET=utf8;
