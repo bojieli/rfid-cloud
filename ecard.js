@@ -99,6 +99,7 @@ function send_mobile(mobiles, msg) {
     smsapi.send(mobiles, msg + config.sms_suffix);
 }
 function send_admin_mobile(msg) {
+    console.log("Admin SMS: " + msg);
     send_mobile(config.admin_mobiles, msg);
 }
 
@@ -360,7 +361,7 @@ try {
     log_error(schoolID, data,
         function(err) {
         try {
-            if (typeof response === "object" && typeof response.returnOK === "function") {
+            if (response != null) {
                 if (err)
                     response.except(err);
                 else
@@ -374,6 +375,8 @@ try {
                         throw err;
                     if (typeof result[0].cnt !== "undefined" && result[0].cnt <= config.max_reports_per_day)
                         send_admin_mobile("[" + schoolName + "]报告: " + data);
+                    else
+                        console.log("reportitnow: reports for " + schoolName + " exceed " + config.max_reports_per_day + ", not sending SMS");
                 } catch (e) {
                     console.log(e);
                 }
