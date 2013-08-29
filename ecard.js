@@ -175,22 +175,24 @@ try {
         }
 
         ++pending_callbacks;
-        getInfoFromCardID(schoolID, cardID, function(student) {
-        try {
-            if (!notify_student(cardID, schoolID, schoolName, student, action)) {
-                response.returnCode(500);
-                response.returned = true;
-            }
+        (function(schoolID, cardID, action) {
+            getInfoFromCardID(schoolID, cardID, function(student) {
+            try {
+                if (!notify_student(cardID, schoolID, schoolName, student, action)) {
+                    response.returnCode(500);
+                    response.returned = true;
+                }
 
-            --pending_callbacks;
-            if (pending_callbacks == 0 && !response.returned)
-                response.returnOK();
-            else if (pending_callbacks < 0)
-                throw "Pending callback count less than zero: " + pending_callbacks;
-        } catch(e) {
-            console.log(e);
-        }
-        });
+                --pending_callbacks;
+                if (pending_callbacks == 0 && !response.returned)
+                    response.returnOK();
+                else if (pending_callbacks < 0)
+                    throw "Pending callback count less than zero: " + pending_callbacks;
+            } catch(e) {
+                console.log(e);
+            }
+            });
+        })(schoolID, cardID, action);
     }
 } catch(e) {
     console.log(e);
@@ -270,11 +272,7 @@ try {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Content-Length': content.length,
     };
-    var post_req = http.request(options, function(res) {
-        res.on('data', function(chunk) {
-            console.log('HTTP push API client response: ' + chunk);
-        });
-    });
+    var post_req = http.request(options);
     post_req.on('error', function(e) { console.log('HTTP push API error: ' + e) });
     post_req.write(content);
     post_req.end();
