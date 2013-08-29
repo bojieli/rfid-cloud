@@ -109,3 +109,22 @@ POST 数据是 JSON 格式。下面的竖线“|”表示“或”的关系。
     data: data,
 }
 ```
+
+
+## 添加（学号，卡号）对应关系的 API
+
+外层是 URL encode（querystring.stringify），内层是 json encode（JSON.stringify）
+
+POST 数据采用标准的 URL encode：```token=<school-token>&data=<url-encoded-data>```
+
+data 字段是 JSON 格式：
+
+```js
+{
+    token: <add-card-api-token>,
+    card_id: "0101xxxxxxxxxxxxxx",
+    student_id: <学生学号>, // 必须在学生数据库中已存在
+}
+```
+
+```add_card.js``` 是一个添加（学号，卡号）的示例程序。
