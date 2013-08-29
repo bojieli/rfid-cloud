@@ -1,8 +1,8 @@
 var access_token = 'M2La02Jd334Os3Nx';
 var post_options = {
-    host: 'blog.ustc.edu.cn',
+    host: 'servmon.lug.ustc.edu.cn',
     port: '80',
-    path: '/servmon/sms-api.php',
+    path: '/sms-api.php',
     method: 'POST',
     headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
