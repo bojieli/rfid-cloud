@@ -56,7 +56,7 @@ function check_timer(last_receive, action, flag) {
             not_received_num: not_received,
             time: now,
         });
-    if (!in_startup && flag && not_received == 0) // before first timeout, do not report
+    if (!in_startup && flag && not_received == 0) { // before first timeout, do not report
         test_push_api({
             type: "ok",
             msg: "收集全了" + action + "事件",
@@ -64,6 +64,9 @@ function check_timer(last_receive, action, flag) {
             not_received_num: not_received,
             time: now,
         });
+        for (id in last_receive)
+            last_receive[id] = undefined;
+    }
 }
 
 function check_goin(flag) {
