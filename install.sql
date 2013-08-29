@@ -13,17 +13,29 @@ CREATE TABLE IF NOT EXISTS school (
     KEY key_token (access_token)
 ) DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS class (
+    id INT(10) NOT NULL AUTO_INCREMENT,
+    name VARCHAR(200),
+    school INT(10) NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (school) REFERENCES school (id)
+) DEFAULT CHARSET=utf8;
+
 CREATE TABLE IF NOT EXISTS student (
     id INT(10) NOT NULL AUTO_INCREMENT,
     school INT(10) NOT NULL,
+    class INT(10) NOT NULL,
     isactive BOOL DEFAULT TRUE,
     register_time DATETIME,
     name VARCHAR(200),
     student_id VARCHAR(200) NOT NULL,
     report_mobile VARCHAR(200),
+    is_in_school BOOL DEFAULT FALSE,
+    last_activity DATETIME,
     PRIMARY KEY (id),
     FOREIGN KEY (school) REFERENCES school (id),
-    UNIQUE KEY (school, student_id)
+    UNIQUE KEY (school, student_id),
+    KEY key_class (class)
 ) DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS card (
