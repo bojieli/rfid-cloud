@@ -140,6 +140,7 @@ try {
         }
         db.query("INSERT INTO gate_log (card,student,time,school,action) VALUES (?,?,NOW(),?,?)",
             [cardID, student.id, schoolID, action]);
+        db.query("UPDATE student SET is_in_school=" + (action == '1' ? 0 : 1) + ", last_activity=NOW() WHERE id=?", [student.id]);
         push_api({
             type: "notify",
             card: cardID,
