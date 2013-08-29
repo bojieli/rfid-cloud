@@ -199,6 +199,14 @@ try {
 }
 }
 
+function reportitnow(schoolID, schoolName, msg) {
+try {
+    handle.reportitnow(schoolID, schoolName, msg, null, true);
+} catch(e) {
+    console.log(e);
+}
+}
+
 var dead_schools = {};
 var heartbeats = {};
 function check_heartbeat() {
@@ -212,9 +220,8 @@ try {
             function(result) {
                 if (typeof result.name === "undefined")
                     return;
-                handle.reportitnow(id, result.name,
-                    "考勤机有 " + (now - heartbeats[id]) + " 秒没发心跳包了，请检查",
-                    true);
+                reportitnow(id, result.name,
+                    "考勤机有 " + (now - heartbeats[id]) + " 秒没发心跳包了，请检查");
                 db.query("UPDATE school SET merger_ok = 0 WHERE id=" + db.escape(id));
 
                 push_api({
@@ -241,9 +248,8 @@ handle.heartbeat = function(schoolID, schoolName, data, response) {
     if (typeof heartbeats[schoolID] === "undefined")
         heartbeats[schoolID] = now;
     else if (now - heartbeats[schoolID] > config.heartbeat_timeout) {
-        handle.reportitnow(schoolID, schoolName,
-            "考勤机已恢复，曾经 " + (now - heartbeats[schoolID]) + " 秒未发心跳包",
-            true);
+        reportitnow(schoolID, schoolName,
+            "考勤机已恢复，曾经 " + (now - heartbeats[schoolID]) + " 秒未发心跳包");
         db.query("UPDATE school SET merger_ok = 1 WHERE id=" + db.escape(schoolID));
         push_api({
             type: "alert",
@@ -370,6 +376,51 @@ try {
             console.log(e);
         }
     });
+} catch(e) {
+    console.log(e);
+}
+}
+
+handle.add_card = function(schoolID, schoolName, data, response) {
+try {
+    var obj = JSON.parse(data);
+    if (obj.token !== config.add_student_api_token) {
+        reportitnow(schoolID, schoolName, "invalid add_student token");
+        response.returnCode(403);
+        return;
+    }
+    if (typeof obj.student_id !== "string" || typeof obj.card_id !== "string") {
+        response.returnCode(400, "invalid format");
+        return;
+    }
+    if (obj.card_id.length != config.card_id_size * 2) {
+        response.returnCode(400, "wrong card id size, " + config.card_id_size*2 + " expected, "
+            + obj.card_id.length + " given");
+        return;
+    }
+    db.find("SELECT id FROM student WHERE school=? AND student_id=?",
+        [schoolID, obj.student_id],
+        function(res) {
+        try {
+            if (typeof res !== "object" || typeof res.id !== "number") {
+                response.returnCode(404, "student ID not found in your school");
+                return;
+            }
+            db.query("REPLACE INTO card (id, student, register_time, isactive) VALUES (?,?,NOW(),1)",
+                [obj.card_id, res.id]);
+            response.returnOK();
+
+            push_api({
+                "action": "add_card",
+                "card_id": obj.card_id,
+                "school": { id: schoolID, name: schoolName },
+                "student": { id: res.id, student_id: obj.student_id },
+            });
+        } catch(e) {
+            console.log(e);
+        }
+        }
+    );
 } catch(e) {
     console.log(e);
 }

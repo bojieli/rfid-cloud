@@ -34,7 +34,7 @@ function test_push_api(obj) {
         'port': 5678,
         'path': '/test-notify',
     };
-    http_post(options, querystring.stringify(obj));
+    http_post(options, JSON.stringify(obj));
 }
 
 function check_timer(last_receive, action, flag) {

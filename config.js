@@ -6,6 +6,7 @@ var toexport = {
     admin_mobiles: ['18715009901'],
     sms_suffix: ' [电子学生证]',
     card_id_size: 9,
+    add_student_api_token: 'FWDnVlLmFvWRutaKSc0EDCk6',
 };
 for (key in toexport)
     exports[key] = toexport[key];
