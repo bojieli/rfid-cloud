@@ -25,12 +25,16 @@
 
 将学生出入校门、考勤机故障等事件以 HTTP POST 的形式通知给第三方 API。
 
-新加 API：
+添加一个 Push API：
 
 1. ```mysql -u root -p ecard``` 输入密码，进入 MySQL 命令行
-2. ```INSERT INTO push_api (host, port, path) VALUES ('example.com', 80, '/notify/path')```
+2. ```INSERT INTO push_api (host, port, path, token) VALUES ('example.com', 80, '/notify/path', 'a-secret-token-for-you')```
 
-POST 数据是 JSON 格式。下面的竖线“|”表示“或”的关系。
+外层是 URL encode（querystring.stringify），内层是 json encode（JSON.stringify）
+
+POST 数据采用标准的 URL encode：```token=<a-secret-token-for-you>&data=<url-encoded-data>```
+
+POST 数据中的 data 字段是 JSON 格式，下面详述。下面的竖线“|”表示“或”的关系。
 
 ### 学生出入校门事件
 
@@ -117,7 +121,7 @@ POST 数据是 JSON 格式。下面的竖线“|”表示“或”的关系。
 
 POST 数据采用标准的 URL encode：```token=<school-token>&data=<url-encoded-data>```
 
-data 字段是 JSON 格式：
+POST 数据中的 data 字段是 JSON 格式：
 
 ```js
 {

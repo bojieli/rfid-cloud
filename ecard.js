@@ -273,15 +273,21 @@ function log_error(school, msg, cont, important) {
 // This function is async and does not guarantee delivery
 function http_post(options, content) {
 try {
+    if (typeof content !== "string")
+        throw "HTTP POST data should be string";
+    var obj = {'data': content};
+    if (typeof options.token === "string" && options.token.length > 0)
+        obj.token = options.token;
+
+    var data = querystring.stringify(obj);
+
     options.method = 'POST';
     options.headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
     };
     var post_req = http.request(options);
     post_req.on('error', function(e) { console.log('HTTP push API error: ' + e) });
-    if (typeof content !== "string")
-        throw "HTTP POST data should be string";
-    post_req.write(querystring.stringify({'data': content}));
+    post_req.write(data);
     post_req.end();
 } catch(e) {
     console.log(e);
@@ -290,7 +296,7 @@ try {
 
 // HTTP POST to all URLs registered for push API
 function push_api(obj) {
-    db.query("SELECT host, port, path FROM push_api", function(err, result) {
+    db.query("SELECT host, port, path, token FROM push_api", function(err, result) {
     try {
         if (err)
             throw err;
