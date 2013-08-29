@@ -43,7 +43,8 @@ function add_card(cardID, studentID) {
     http_post(options, JSON.stringify(obj));
 }
 
-console.log("Input format: <cardID> <studentID>");
+console.log("Input format: one (cardID, studentID) pair per line, separated by space");
+console.log("Example: 010101010101010101 PB00000000");
 
 var readline = require('readline');
 var rl = readline.createInterface({
