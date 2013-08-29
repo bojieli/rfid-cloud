@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS error_log (
     school INT(10) NOT NULL,
     time DATETIME NOT NULL,
     msg TEXT NOT NULL,
+    important BOOL NOT NULL DEFAULT 0,
     KEY key_school (school),
     KEY key_time (time)
 ) DEFAULT CHARSET=utf8;

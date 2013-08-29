@@ -265,9 +265,9 @@ handle.heartbeat = function(schoolID, schoolName, data, response) {
     response.returnOK();
 }
 
-function log_error(school, msg, cont) {
-    db.query("INSERT INTO error_log (school,time,msg) VALUES (?,NOW(),?)",
-        [school, msg], cont);
+function log_error(school, msg, cont, important) {
+    db.query("INSERT INTO error_log (school,time,msg,important) VALUES (?,NOW(),?,?)",
+        [school, msg, (important ? 1 : 0)], cont);
 }
 
 // This function is async and does not guarantee delivery
@@ -354,13 +354,13 @@ try {
     log_error(schoolID, data,
         function(err) {
         try {
-            if (typeof response === "object") {
+            if (typeof response === "object" && typeof response.returnOK === "function") {
                 if (err)
                     response.except(err);
                 else
                     response.returnOK();
             }
-            db.query("SELECT COUNT(*) as cnt FROM error_log WHERE school=? AND time > DATE_SUB(NOW(), INTERVAL 1 DAY)",
+            db.query("SELECT COUNT(*) as cnt FROM error_log WHERE school=? AND time > DATE_SUB(NOW(), INTERVAL 1 DAY) AND important=1",
                 [schoolID],
                 function(err, result) {
                 try {
@@ -375,7 +375,8 @@ try {
         } catch(e) {
             console.log(e);
         }
-    });
+        }, // end function
+    true); // important
 } catch(e) {
     console.log(e);
 }
