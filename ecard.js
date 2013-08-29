@@ -270,11 +270,12 @@ try {
     options.method = 'POST';
     options.headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': content.length,
     };
     var post_req = http.request(options);
     post_req.on('error', function(e) { console.log('HTTP push API error: ' + e) });
-    post_req.write(content);
+    if (typeof content !== "string")
+        throw "HTTP POST data should be string";
+    post_req.write(querystring.stringify({'data': content}));
     post_req.end();
 } catch(e) {
     console.log(e);
@@ -288,7 +289,7 @@ function push_api(obj) {
         if (err)
             throw err;
         for (i in result)
-            http_post(result[i], querystring.stringify(obj));
+            http_post(result[i], JSON.stringify(obj));
     } catch(e) {
         console.log(e);
     }

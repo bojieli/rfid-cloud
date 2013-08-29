@@ -17,11 +17,10 @@ try {
     options.method = 'POST';
     options.headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': content.length,
     };
     var post_req = http.request(options);
     post_req.on('error', function(e) { console.log('HTTP push API error: ' + e) });
-    post_req.write(content);
+    post_req.write(querystring.stringify({'data':content}));
     post_req.end();
 } catch(e) {
     console.log(e);
@@ -84,7 +83,6 @@ function check_goout(flag) {
 
 var timer_startup = null;
 function handle(obj) {
-    console.log(obj.card);
     if (typeof obj.card !== "string")
         return;
     if (in_startup) {
@@ -114,7 +112,8 @@ function handle(obj) {
     }
 }
 function route(pathname, headers, data, response) {
-    var obj = querystring.parse(data);
+    var qstring = querystring.parse(data);
+    var obj = JSON.parse(qstring['data']);
     handle(obj);
     response.returnOK(); 
 }
