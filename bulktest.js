@@ -6,6 +6,7 @@ var goin = {}, goout = {};
 var timeout = 10;
 var timer_goin = false, timer_goout = false;
 var in_startup = true;
+var test_ids = {};
 
 function currtime() {
     return Math.round(+new Date()/1000);
@@ -40,15 +41,13 @@ function test_push_api(obj) {
 function check_timer(last_receive, action, flag) {
     var now = currtime();
     var received = 0, not_received = 0;
-    for (id in last_receive) {
-        if (now - last_receive[id] <= timeout)
+    for (id in test_ids) {
+        if (typeof last_receive[id] === "number")
             received++;
         else
             not_received++;
     }
-    if (!flag && in_startup) // first timeout
-        in_startup = false;
-    if (!flag && not_received > 0)
+    if (!flag && not_received > 0) {
         test_push_api({
             type: "error",
             msg: timeout+"秒超时内没有收集全" + action + "事件",
@@ -56,6 +55,9 @@ function check_timer(last_receive, action, flag) {
             not_received_num: not_received,
             time: now,
         });
+        for (id in last_receive)
+            last_receive[id] = undefined;
+    }
     if (!in_startup && flag && not_received == 0) { // before first timeout, do not report
         test_push_api({
             type: "ok",
@@ -80,23 +82,34 @@ function check_goout(flag) {
         timer_goout = false;
 }
 
+var timer_startup = null;
 function handle(obj) {
+    console.log(obj.card);
     if (typeof obj.card !== "string")
         return;
+    if (in_startup) {
+        test_ids[obj.card] = true;
+        if (!timer_startup) {
+            console.log("Received first ID");
+            timer_startup = setTimeout(function(){
+                in_startup = false;
+                console.log("Starting test " + Object.keys(test_ids).length + " IDs");
+            }, timeout * 1000);
+        }
+        return;
+    }
     if (obj.action == 1) {
         goout[obj.card] = currtime();
         check_goout(true);
         if (!timer_goout) {
-            setTimeout(check_goout, timeout * 1000);
-            timer_goout = true;
+            timer_goout = setTimeout(check_goout, timeout * 1000);
         }
     }
     else {
         goin[obj.card] = currtime();
         check_goin(true);
         if (!timer_goin) {
-            setTimeout(check_goin, timeout * 1000);
-            timer_goin = true;
+            timer_goin = setTimeout(check_goin, timeout * 1000);
         }
     }
 }
