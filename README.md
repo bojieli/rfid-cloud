@@ -6,6 +6,7 @@
 
 * node.js
 * MySQL
+* dnspod-client (to install: ```npm install dnspod-client```)
 
 初始化数据库：
 
