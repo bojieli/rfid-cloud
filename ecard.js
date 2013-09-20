@@ -488,6 +488,10 @@ function http_server(request, response) {
     }
     try {
         var pathname = url.parse(request.url).pathname;
+        if (pathname == "/ping") {
+            this.returnCode(200, "pong");
+            return;
+        }
         if (request.method == "POST") {
             var data = "";
             request.on("data", function(chunk) {
