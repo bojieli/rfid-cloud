@@ -439,7 +439,7 @@ try {
 handle.reportip = function(schoolID, schoolName, data, response) {
 try {
     var obj = JSON.parse(data);
-    db.query("REPLACE INTO dynamic_ip (schoolID, hostname, eth0, tun0) VALUES (?,?,?,?)",
+    db.query("REPLACE INTO dynamic_ip (school, hostname, eth0, tun0) VALUES (?,?,?,?)",
         [schoolID, obj.hostname, obj.eth0, obj.tun0]);
     push_api({
         "action": "report_ip",
@@ -454,7 +454,7 @@ try {
 
 function generic_queryip(schoolID, schoolName, hostname, field, response) {
 try {
-    db.find("SELECT ? FROM dynamic_ip WHERE schoolID=? AND hostname=?",
+    db.find("SELECT ? FROM dynamic_ip WHERE school=? AND hostname=?",
         [field, schoolID, data],
         function(res) {
         try {

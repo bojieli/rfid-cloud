@@ -38,6 +38,16 @@ CREATE TABLE IF NOT EXISTS student (
     KEY key_class (class)
 ) DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS dynamic_ip (
+    school INT(10) NOT NULL,
+    hostname VARCHAR(50) NOT NULL,
+    eth0 VARCHAR(50),
+    tun0 VARCHAR(50),
+    FOREIGN KEY (school) REFERENCES school (id),
+    UNIQUE KEY (school, hostname),
+    KEY key_tun0 (tun0)
+) DEFAULT CHARSET=utf8;
+
 CREATE TABLE IF NOT EXISTS card (
     id CHAR(18) NOT NULL,
     student INT(10) NOT NULL UNIQUE,
