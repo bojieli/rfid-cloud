@@ -482,6 +482,10 @@ handle.queryvpnip = function(schoolID, schoolName, data, response) {
     generic_queryip(schoolID, schoolName, data, "tun0", response);
 }
 
+handle.queryip_lastreport = function(schoolID, schoolName, data, response) {
+    generic_queryip(schoolID, schoolName, data, "last_report", response);
+}
+
 function route(pathname, headers, data, response) {
 try {
     pathname = pathname.replace('/', '');
