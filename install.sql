@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS dynamic_ip (
     hostname VARCHAR(50) NOT NULL,
     eth0 VARCHAR(50),
     tun0 VARCHAR(50),
+    last_report DATETIME,
     FOREIGN KEY (school) REFERENCES school (id),
     UNIQUE KEY (school, hostname),
     KEY key_tun0 (tun0)

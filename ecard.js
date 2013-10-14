@@ -439,7 +439,7 @@ try {
 handle.reportip = function(schoolID, schoolName, data, response) {
 try {
     var obj = JSON.parse(data);
-    db.query("REPLACE INTO dynamic_ip (school, hostname, eth0, tun0) VALUES (?,?,?,?)",
+    db.query("REPLACE INTO dynamic_ip (school, hostname, eth0, tun0, last_report) VALUES (?,?,?,?,NOW())",
         [schoolID, obj.hostname, obj.eth0, obj.tun0]);
     response.returnOK();
     push_api({
