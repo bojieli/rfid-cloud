@@ -1,0 +1,30 @@
+#!/bin/bash
+function getip() {
+    ip=$(curl -d "token=$1&data=$2" http://gewu.me/ecard/$3 2>/dev/null)
+    if [ -z "$ip" ]; then
+        echo "not found";
+    else
+        echo -n "$ip";
+        lastreport=$(curl -d "token=$1&data=$2" http://gewu.me/ecard/queryip_lastreport 2>/dev/null)
+        echo "    (last report: $lastreport)"
+    fi
+}
+
+if [ "$1" == "test" ]; then
+    token="MUp0JBjFn5LNgWPfFNQT"
+elif [ "$1" == "2" ]; then
+    token="i18koB6w1NjGKQAQSOKa"
+else
+    echo "usage: queryip (test | 2)"
+    exit 1
+fi
+
+if [ "$2" == "local" ]; then
+    action=queryip
+else
+    action=queryvpnip
+fi
+echo -n "master: "
+getip $token master $action
+echo -n "slave: "
+getip $token slave $action
