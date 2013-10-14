@@ -436,6 +436,51 @@ try {
 }
 }
 
+handle.reportip = function(schoolID, schoolName, data, response) {
+try {
+    var obj = JSON.parse(data);
+    db.query("REPLACE INTO dynamic_ip (schoolID, hostname, eth0, tun0) VALUES (?,?,?,?)",
+        [schoolID, obj.hostname, obj.eth0, obj.tun0]);
+    push_api({
+        "action": "report_ip",
+        "school": { id: schoolID, name: schoolName },
+        "hostname": obj.hostname,
+        "interfaces": { eth0: obj.eth0, tun0: obj.tun0 },
+    });
+} catch(e) {
+    console.log(e);
+}
+}
+
+function generic_queryip(schoolID, schoolName, hostname, field, response) {
+try {
+    db.find("SELECT ? FROM dynamic_ip WHERE schoolID=? AND hostname=?",
+        [field, schoolID, data],
+        function(res) {
+        try {
+            if (typeof res !== "object") {
+                response.returnCode(404, "not found");
+                return;
+            }
+            response.returnCode(200, res[field]);
+        } catch(e) {
+            console.log(e);
+        }
+        }
+    );
+} catch(e) {
+    console.log(e);
+}
+}
+
+handle.queryip = function(schoolID, schoolName, data, response) {
+    generic_queryip(schoolID, schoolName, data, "eth0", response);
+}
+
+handle.queryvpnip = function(schoolID, schoolName, data, response) {
+    generic_queryip(schoolID, schoolName, data, "tun0", response);
+}
+
 function route(pathname, headers, data, response) {
 try {
     pathname = pathname.replace('/', '');
