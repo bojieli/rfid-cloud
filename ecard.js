@@ -517,7 +517,7 @@ try {
 function http_server(request, response) {
     response.on("error", function(e) { console.log('HTTP response error: ' + e) });
     response.returnCode = function(code, msg) {
-        msg = (typeof msg === "string" ? msg : msg.toString());
+        msg = (typeof msg === "string" ? msg : (typeof msg === "object" ? msg.toString() : ""));
         console.log("Response: HTTP " + code + " (" + msg.length + " bytes)");
         this.writeHeader(code, {'Content-Length': msg.length });
         this.write(msg);
