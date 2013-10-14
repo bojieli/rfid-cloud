@@ -2,11 +2,9 @@
 function getip() {
     ip=$(curl -d "token=$1&data=$2" http://gewu.me/ecard/$3 2>/dev/null)
     if [ -z "$ip" ]; then
-        echo "not found";
+        echo -n "not found";
     else
         echo -n "$ip";
-        lastreport=$(curl -d "token=$1&data=$2" http://gewu.me/ecard/queryip_lastreport 2>/dev/null)
-        echo "    (last report: $lastreport)"
     fi
 }
 
@@ -19,12 +17,7 @@ else
     exit 1
 fi
 
-if [ "$2" == "local" ]; then
-    action=queryip
-else
-    action=queryvpnip
-fi
-echo -n "master: "
-getip $token master $action
-echo -n "slave: "
-getip $token slave $action
+echo "        LOCAL IP         VPN IP           last report"
+echo "master  $(getip $token master queryip)    $(getip $token master queryvpnip)    $(getip $token master queryip_lastreport)"
+echo "slave   $(getip $token slave queryip)    $(getip $token slave queryvpnip)    $(getip $token slave queryip_lastreport)"
+
