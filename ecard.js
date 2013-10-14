@@ -455,8 +455,8 @@ try {
 
 function generic_queryip(schoolID, schoolName, hostname, field, response) {
 try {
-    db.find("SELECT ? FROM dynamic_ip WHERE school=? AND hostname=?",
-        [field, schoolID, hostname],
+    db.find("SELECT " + field + " FROM dynamic_ip WHERE school=? AND hostname=?",
+        [schoolID, hostname],
         function(res) {
         try {
             if (typeof res !== "object") {
