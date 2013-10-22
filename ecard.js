@@ -164,12 +164,12 @@ try {
     for (i in transactions) {
         if (transactions[i].length == 0)
             continue;
-        if (transactions[i].length != config.card_id_size * 2 + 1) {
+        if (config.card_id_check && transactions[i].length != config.card_id_size * 2 + 1) {
             invalid_msg(transactions[i]);
             continue;
         }
-        var cardID = transactions[i].substr(0, config.card_id_size * 2);
-        var action = transactions[i].substr(config.card_id_size * 2, 1);
+        var cardID = transactions[i].substr(0, transactions[i].length - 1);
+        var action = transactions[i].substr(transactions[i].length - 1, 1);
         if (action != '0' && action != '1') {
             invalid_msg(transactions[i]);
             continue;
@@ -403,7 +403,7 @@ try {
         response.returnCode(400, "invalid format");
         return;
     }
-    if (obj.card_id.length != config.card_id_size * 2) {
+    if (config.card_id_check && obj.card_id.length != config.card_id_size * 2) {
         response.returnCode(400, "wrong card id size, " + config.card_id_size*2 + " expected, "
             + obj.card_id.length + " given");
         return;
