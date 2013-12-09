@@ -442,12 +442,14 @@ try {
     db.query("REPLACE INTO dynamic_ip (school, hostname, eth0, tun0, last_report) VALUES (?,?,?,?,NOW())",
         [schoolID, obj.hostname, obj.eth0, obj.tun0]);
     response.returnOK();
+    /*
     push_api({
         "action": "report_ip",
         "school": { id: schoolID, name: schoolName },
         "hostname": obj.hostname,
         "interfaces": { eth0: obj.eth0, tun0: obj.tun0 },
     });
+    */
 } catch(e) {
     console.log(e);
 }
