@@ -104,7 +104,8 @@ function send_admin_mobile(msg) {
 }
 
 function getStudentIdForMulandianzi(cardID) {
-    var station = parseInt(cardID.slice(0,2).toLowercase(), 16);
+try {
+    var station = parseInt(cardID.slice(0,2).toLowerCase(), 16);
     var raw = cardID.slice(2).toLowerCase();
     var tmp1 = parseInt(raw.slice(0,2), 16);
     var tmp2 = parseInt(raw.charAt(7), 16);
@@ -119,6 +120,10 @@ function getStudentIdForMulandianzi(cardID) {
     tmp1 = tmp1 ^ 89;
     tmp2 = tmp2 ^ 6;
     return (tmp2 << 8) + tmp1;
+} catch (e) {
+    console.log(e);
+    return -1;
+}
 }
 
 function getInfoFromCardID(schoolID, cardID, cont) {
