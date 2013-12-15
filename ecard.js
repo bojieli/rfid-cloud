@@ -103,10 +103,37 @@ function send_admin_mobile(msg) {
     send_mobile(config.admin_mobiles, msg);
 }
 
+function getStudentIdForMulandianzi(cardID) {
+    var station = parseInt(cardID.slice(0,2).toLowercase(), 16);
+    var raw = cardID.slice(2).toLowerCase();
+    var tmp1 = parseInt(raw.slice(0,2), 16);
+    var tmp2 = parseInt(raw.charAt(7), 16);
+    switch (station) {
+        case 2:
+            tmp1 += (1<<7); break;
+        case 10:
+            break;
+        default:
+            console.log("Mulandianzi cardID " + cardID + " has station " + station + ", should be 2 or 10"); break;
+    }
+    tmp1 = tmp1 ^ 89;
+    tmp2 = tmp2 ^ 6;
+    return (tmp2 << 8) + tmp1;
+}
+
 function getInfoFromCardID(schoolID, cardID, cont) {
-    db.find("SELECT student.id, student.report_mobile, student.name FROM student, card WHERE card.student=student.id AND student.school=? AND card.id=? AND card.isactive=TRUE AND student.isactive=TRUE",
+    // special case for mulandianzi
+    if (schoolID == 2) {
+        cont({
+            id: getStudentIdForMulandianzi(cardID),
+            report_mobile: '',
+            name: '',
+        });
+    } else { // normal case
+        db.find("SELECT student.id, student.report_mobile, student.name FROM student, card WHERE card.student=student.id AND student.school=? AND card.id=? AND card.isactive=TRUE AND student.isactive=TRUE",
             [schoolID, cardID],
             cont);
+    }
 }
 
 var handle = {};
