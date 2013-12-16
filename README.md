@@ -43,7 +43,7 @@ POST 数据中的 data 字段是 JSON 格式，下面详述。下面的竖线“
 {
     type: "notify",
     card: "0101xxxxxxxxxxxxxx",
-    action: "0"|"1", // 分别表示进或出校门
+    action: "0"|"1", // 0 出校门，1 进校门
     school: {
         id: schoolID, 
         name: schoolName
@@ -97,7 +97,7 @@ POST 数据中的 data 字段是 JSON 格式，下面详述。下面的竖线“
         name: schoolName
     },
     card: "0101xxxxxxxxxxxxxx",
-    action: "0"|"1", // 分别表示进或出校门
+    action: "0"|"1", // 0 出校门，1 进校门
 }
 ```
 
