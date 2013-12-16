@@ -110,9 +110,9 @@ try {
     var tmp1 = parseInt(raw.slice(0,2), 16);
     var tmp2 = parseInt(raw.charAt(7), 16);
     switch (station) {
-        case 10:
-            tmp1 += (1<<7); break;
         case 2:
+            tmp1 += (1<<7); break;
+        case 10:
             break;
         default:
             console.log("Mulandianzi cardID " + cardID + " has station " + station + ", should be 2 or 10"); break;
