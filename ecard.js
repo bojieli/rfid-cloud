@@ -173,7 +173,7 @@ try {
         }
         db.query("INSERT INTO gate_log (card,student,time,school,action) VALUES (?,?,NOW(),?,?)",
             [cardID, student.id, schoolID, action]);
-        db.query("UPDATE student SET is_in_school=" + (action == '1' ? 0 : 1) + ", last_activity=NOW() WHERE id=?", [student.id]);
+        db.query("UPDATE student SET is_in_school=" + (action == '0' ? 0 : 1) + ", last_activity=NOW() WHERE id=?", [student.id]);
         push_api({
             type: "notify",
             card: cardID,
@@ -184,7 +184,7 @@ try {
         if (typeof student.report_mobile !== "string" || student.report_mobile.length == 0) // no mobile to be reported
             return true;
         student.report_mobile = student.report_mobile.split(",");
-        send_mobile(student.report_mobile, "您的孩子" + student.name + "已" + (action == '1' ? '走出' : '进入') + schoolName + "校门");
+        send_mobile(student.report_mobile, "您的孩子" + student.name + "已" + (action == '0' ? '走出' : '进入') + schoolName + "校门");
         return true;
     } catch(e) {
         console.log(e);
