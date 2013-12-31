@@ -405,8 +405,13 @@ try {
                 try {
                     if (err)
                         throw err;
-                    if (typeof result[0].cnt !== "undefined" && result[0].cnt <= config.max_reports_per_day)
-                        send_admin_mobile("[" + schoolName + "]报告: " + data);
+                    if (typeof result[0].cnt !== "undefined" && result[0].cnt <= config.max_reports_per_day) {
+                        var msg = "[" + schoolName + "]报告: " + data;
+                        send_admin_mobile(msg);
+                        if (schoolID == 2) {
+                            sms.send_mulandianzi(msg);
+                        }
+                    }
                     else
                         console.log("reportitnow: reports for " + schoolName + " exceed " + config.max_reports_per_day + ", not sending SMS");
                 } catch (e) {

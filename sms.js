@@ -24,3 +24,19 @@ exports.send = function(mobiles, msg) {
     post_req.write(post_data);
     post_req.end();
 }
+
+var urllib = require("urllib") ;
+exports.send_mulandianzi = function(msg) {
+    urllib.request("http://hlzj.ah.cn:8808/sms",{
+        type:'post',
+        data:{
+            token : "fs76QMsIfh8934rdfsGYSuHU",
+            mobis: ["18056092610","18130717171"],
+            content: msg,
+        }
+        },function(err,data,res){
+            console.log(err);
+            console.log(data.toString());
+        }
+    );
+}
