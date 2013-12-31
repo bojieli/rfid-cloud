@@ -409,7 +409,7 @@ try {
                         var msg = "[" + schoolName + "]报告: " + data;
                         send_admin_mobile(msg);
                         if (schoolID == 2) {
-                            sms.send_mulandianzi(msg);
+                            smsapi.send_mulandianzi(msg);
                         }
                     }
                     else
