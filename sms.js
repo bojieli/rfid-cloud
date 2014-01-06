@@ -34,9 +34,10 @@ exports.send_mulandianzi = function(msg) {
             mobis: ["18056092610","18130717171"],
             content: msg,
         }
-        },function(err,data,res){
-            console.log(err);
-            console.log(data.toString());
+        },function(err){
+            if (err) {
+                console.log(err);
+            }
         }
     );
 }
