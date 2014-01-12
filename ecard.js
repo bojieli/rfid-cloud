@@ -604,22 +604,32 @@ function http_server(request, response) {
     }
 }
 
-function handle_disconnect(connection) {
+function getConnection(){
+    mysql.pool.getConnection(function(err, conn){
+        if (err) {
+            console.log(err);
+            setTimeout(getConnection, 1000);
+        } else {
+            new_connection(conn);
+        }
+    });
+}
+
+function err_handler(err) {
+    console.log("MySQL connection error");
+    if (!err.fatal)
+        return;
+    if (err.code !== 'PROTOCOL_CONNECTION_LOST')
+        throw err;
+    getConnection();
+}
+
+function new_connection(connection) {
     // db is global var to hold connection
     db = connection;
     for (f in dbproto)
         db[f] = dbproto[f];
-    function err_handler(err) {
-        if (!err.fatal)
-            return;
-        if (err.code !== 'PROTOCOL_CONNECTION_LOST')
-            throw err;
-        console.log('Re-connecting lost connection: ' + err.stack);
-  
-        connection = mysql.createConnection(connection.config);
-        handle_disconnect(connection);
-        connection.connect();
-    }
+    console.log("MySQL connected");
     connection.on('error', err_handler);
     connection.on('end', err_handler);
 }
@@ -627,7 +637,7 @@ function handle_disconnect(connection) {
 mysql.pool.getConnection(function(err, conn) {
     if (err)
         throw err;
-    handle_disconnect(conn);
+    new_connection(conn);
     try {
         http.createServer(http_server).listen(config.listen_port, config.listen_host);
         console.log("Listening on " + config.listen_host + ":" + config.listen_port);
